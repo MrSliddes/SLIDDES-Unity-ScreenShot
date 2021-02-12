@@ -1,0 +1,21 @@
+{
+  "name": "com.sliddes.screenshot",
+  "version": "1.0.0",
+  "displayName": "SLIDDES ScreenShot",
+  "description": "Easy to use screenshot editor window.\n\nAccess: Window > SLIDDES > ScreenShot",
+  "unity": "2020.1",
+  "unityRelease": "0b5",
+  "dependencies": {
+ },
+ "keywords": [
+    "keyword1",
+    "keyword2",
+    "keyword3"
+  ],
+  "author": {
+    "name": "SLIDDES",
+    "email": "supp.sliddes@gmail.com",
+    "url": "https://www.sliddes.com"
+  },
+    "type": "tool"
+}
