@@ -6,12 +6,13 @@ using UnityEditor;
 
 namespace SLIDDES.Editor.Window
 {
-    // v1.0.0
     public class EditorWindowScreenShot : EditorWindow
     {
         // TODO
         // snip selected for screenshotsize
         // Saving for file extension
+        // button that takes screenshots for android and iOS formats
+        // include UI button toggle
 
         /// <summary>
         /// When an screenshot is taken the editor should highlight it if possible
@@ -60,6 +61,10 @@ namespace SLIDDES.Editor.Window
         /// Used for editor scrollbar
         /// </summary>
         private Vector2 editorScrollPosition;
+        /// <summary>
+        /// Used to store previous style
+        /// </summary>
+        private FontStyle previousStyle;
 
         private bool editorFoldoutScreenShot = true;
         private bool editorFoldoutSettings;
@@ -74,6 +79,8 @@ namespace SLIDDES.Editor.Window
         /// Is user able to take screenshot of sceneview?
         /// </summary>
         private bool canTakeScreenShotSceneView = true;
+
+        private string fileDirectoryDefault = "/SLIDDES Temporary/Editor/";
 
         // Add menu item to the Window menu
         [MenuItem("Window/SLIDDES/ScreenShot")]
@@ -121,7 +128,10 @@ namespace SLIDDES.Editor.Window
             GUILayout.Space(editorSpacePixels);
 
             // Screenshot
-            editorFoldoutScreenShot = EditorGUILayout.BeginFoldoutHeaderGroup(editorFoldoutScreenShot, "Take ScreenShot");
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            previousStyle = EditorStyles.foldout.fontStyle; EditorStyles.foldout.fontStyle = FontStyle.Bold; // Bold foldout
+            editorFoldoutScreenShot = EditorGUILayout.Foldout(editorFoldoutScreenShot, " Take ScreenShot", true);
+            EditorStyles.foldout.fontStyle = previousStyle; // Reset bold foldout
             if(editorFoldoutScreenShot)
             {
                 EditorGUILayout.BeginVertical(EditorStyles.inspectorDefaultMargins);
@@ -215,12 +225,12 @@ namespace SLIDDES.Editor.Window
                         bytes = screenShot.EncodeToPNG();
                     }
                     string fileName = GenerateScreenShotName(resolution.x, resolution.y, true);
-                    string filePath = Application.dataPath + fileName;
+                    string filePath; if(useCustomSettings) filePath = fileName; else filePath = Application.dataPath + fileName;
                     // Check for directory in asset root folder
-                    if(!Directory.Exists(Application.dataPath + "/SLIDDES Temporary")) // change destination
+                    if(!Directory.Exists(Application.dataPath + fileDirectoryDefault)) // change destination
                     {
                         //if it doesn't, create it
-                        Directory.CreateDirectory(Application.dataPath + "/SLIDDES Temporary");
+                        Directory.CreateDirectory(Application.dataPath + fileDirectoryDefault);
                     }
                     System.IO.File.WriteAllBytes(filePath, bytes);
                     AssetDatabase.Refresh(); // Refresh so picture becomes visable in project files inside unity
@@ -309,12 +319,12 @@ namespace SLIDDES.Editor.Window
                         bytes = screenShot.EncodeToPNG();
                     }
                     string fileName = GenerateScreenShotName(resolution.x, resolution.y, false);
-                    string filePath = Application.dataPath + fileName;
+                    string filePath; if(useCustomSettings) filePath = fileName; else filePath = Application.dataPath + fileName;
                     // Check for directory in asset root folder
-                    if(!Directory.Exists(Application.dataPath + "/SLIDDES Temporary")) // change destination
+                    if(!Directory.Exists(Application.dataPath + fileDirectoryDefault)) // change destination
                     {
                         //if it doesn't, create it
-                        Directory.CreateDirectory(Application.dataPath + "/SLIDDES Temporary");
+                        Directory.CreateDirectory(Application.dataPath + fileDirectoryDefault);
                     }
                     System.IO.File.WriteAllBytes(filePath, bytes);
                     AssetDatabase.Refresh(); // Refresh so picture becomes visable in project files inside unity
@@ -350,16 +360,18 @@ namespace SLIDDES.Editor.Window
                 }
                 else
                 {
-                    EditorGUILayout.HelpBox("Screenshots are saved at: " + Application.dataPath + "/SLIDDES Temporary", MessageType.None);
+                    EditorGUILayout.HelpBox("Screenshots are saved at: " + Application.dataPath + fileDirectoryDefault, MessageType.None);
                 }
                 EditorGUILayout.Space();
                 EditorGUILayout.EndVertical();
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
-            EditorGUILayoutHorizontalLine();
+            EditorGUILayout.EndVertical();
 
-            // Settings            
-            editorFoldoutSettings = EditorGUILayout.BeginFoldoutHeaderGroup(editorFoldoutSettings, "Settings");
+            // Settings
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            previousStyle = EditorStyles.foldout.fontStyle; EditorStyles.foldout.fontStyle = FontStyle.Bold; // Bold foldout
+            editorFoldoutSettings = EditorGUILayout.Foldout(editorFoldoutSettings, " Settings", true);
+            EditorStyles.foldout.fontStyle = previousStyle; // Reset bold foldout
             if(editorFoldoutSettings)
             {
                 EditorGUILayout.BeginVertical(EditorStyles.inspectorDefaultMargins);
@@ -375,13 +387,17 @@ namespace SLIDDES.Editor.Window
                     highlightTakenScreenShot = EditorGUILayout.Toggle("Highlight Taken ScreenShot", highlightTakenScreenShot);
                 }
                 EditorGUILayout.Space();
+                EditorGUILayout.HelpBox("For UI to render on Game view the UI Render Mode needs to be on Screen Space - Camera", MessageType.Info);
+                EditorGUILayout.Space();
                 EditorGUILayout.EndVertical();
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
-            EditorGUILayoutHorizontalLine();
+            EditorGUILayout.EndVertical();
 
-            // Custom Settings
-            editorFoldoutCustomSettings = EditorGUILayout.BeginFoldoutHeaderGroup(editorFoldoutCustomSettings, "Custom Settings");
+            // Custom Settings            
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            previousStyle = EditorStyles.foldout.fontStyle; EditorStyles.foldout.fontStyle = FontStyle.Bold; // Bold foldout
+            editorFoldoutCustomSettings = EditorGUILayout.Foldout(editorFoldoutCustomSettings, " Custom Settings", true);
+            EditorStyles.foldout.fontStyle = previousStyle; // Reset bold foldout
             if(editorFoldoutCustomSettings)
             {
                 EditorGUILayout.BeginVertical(EditorStyles.inspectorDefaultMargins);
@@ -405,10 +421,10 @@ namespace SLIDDES.Editor.Window
                     // File directory
                     EditorGUILayout.BeginHorizontal();
                     customFileDirectory = EditorGUILayout.TextField("File Directory", customFileDirectory);
-                    if(string.IsNullOrEmpty(customFileDirectory) || string.IsNullOrWhiteSpace(customFileDirectory)) customFileDirectory = Application.dataPath + "/SLIDDES Temporary";
+                    if(string.IsNullOrEmpty(customFileDirectory) || string.IsNullOrWhiteSpace(customFileDirectory)) customFileDirectory = Application.dataPath + fileDirectoryDefault;
                     if(GUILayout.Button("Reset", GUILayout.Width(45)))
                     {
-                        customFileDirectory = Application.dataPath + "/SLIDDES Temporary";
+                        customFileDirectory = Application.dataPath + fileDirectoryDefault;
                         canTakeScreenShotGameView = canTakeScreenShotSceneView = true;
                         Repaint();
                     }
@@ -479,13 +495,19 @@ namespace SLIDDES.Editor.Window
                 EditorGUILayout.Space();
                 EditorGUILayout.EndVertical();
             }
-            EditorGUILayout.EndFoldoutHeaderGroup();
-            EditorGUILayoutHorizontalLine();
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
 
+        /// <summary>
+        /// Generates the screenshot name with filedirectory (fileDirectory + name)
+        /// </summary>
+        /// <param name="width">Width in pixels of screenshot</param>
+        /// <param name="height">Height in pixels of screenshot</param>
+        /// <param name="isGameView">Is the view that of window Game?</param>
+        /// <returns></returns>
         private string GenerateScreenShotName(int width, int height, bool isGameView) // editable name
         {
             string s;
@@ -494,7 +516,15 @@ namespace SLIDDES.Editor.Window
             string name;
             if(useCustomSettings) name = customFileName; else name = "{0}_{1}_{2}x{3}";
             // Result
-            string result = string.Format("/SLIDDES Temporary/" + name, s, System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"), width, height);
+            string result;
+            if(useCustomSettings)
+            {
+                result = string.Format(customFileDirectory + name, s, System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"), width, height);
+            }
+            else
+            {
+                result = string.Format(fileDirectoryDefault + name, s, System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"), width, height);
+            }
             if(useCustomSettings)
             {
                 switch(customScreenShotFileExtension)
@@ -511,12 +541,6 @@ namespace SLIDDES.Editor.Window
                 result += ".png";
             }
             return result;
-        }
-
-        private void EditorGUILayoutHorizontalLine()
-        {
-            Rect rect = EditorGUILayout.GetControlRect(false, 1);
-            EditorGUI.DrawRect(rect, new Color(0.102f, 0.102f, 0.102f)); // Unity inspector same color
         }
     }
 
@@ -538,3 +562,4 @@ namespace SLIDDES.Editor.Window
 // Copy component values https://answers.unity.com/questions/530178/how-to-get-a-component-from-an-object-and-add-it-t.html?_ga=2.100223772.388525063.1612813523-1054575301.1586788407
 // Label width https://answers.unity.com/questions/630488/editorguilayoutobjectfield-redundant-space-between.html
 // Wide mode (vector3 layout) https://docs.unity3d.com/ScriptReference/EditorGUIUtility-wideMode.html
+// Editor style https://forum.unity.com/threads/how-to-recreate-this-editor-style.496392/
