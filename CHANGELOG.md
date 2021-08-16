@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [2.0.0] - 2021-08-16
+### Changed
+- Major overhaul of all scripts and editor window look.
+- Made everything easier, simpler and better structured.
+
 ## [1.0.2] - 2021-02-21
 ### Added
 - filePathDefault string that contains "/SLIDDES Temporary/Editor/"

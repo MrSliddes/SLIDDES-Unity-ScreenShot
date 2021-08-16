@@ -1,20 +1,21 @@
 {
   "name": "com.sliddes.screenshot",
-  "version": "1.0.2",
-  "displayName": "SLIDDES ScreenShot",
-  "description": "Easy to use screenshot editor window.\n\nAccess: Window > SLIDDES > ScreenShot",
+  "version": "2.0.0",
+  "displayName": "SLIDDES Screenshot",
+  "description": "Easy to use screenshot editor window for taking screenshots in Unity.\n\nAccess: Window > SLIDDES > Screenshot",
   "unity": "2020.1",
   "unityRelease": "0b5",
   "keywords": [
     "sliddes",
     "SLIDDES",
     "Screen",
-    "Shot",
-    "ScreenShot"
+    "shot",
+    "Screenshot",
+    "Picture"
   ],
   "author": {
     "name": "SLIDDES",
-    "email": "supp.sliddes@gmail.com",
+    "email": "support@sliddes.com",
     "url": "https://www.sliddes.com"
   },
   "type": "tool"
