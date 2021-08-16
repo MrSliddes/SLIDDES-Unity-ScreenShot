@@ -11,7 +11,8 @@ SLIDDES Unity Screenshot allows for easily creating screenshots inside Unity Edi
 - Quickly switch from platform to platform for different resolutions
 - Add your own custom resolutions and platforms
 
-![Img Activity Tracker 0](https://github.com/MrSliddes/SLIDDES-Unity-Screenshot/blob/GitHub-Info/SLIDDES_Unity_Screenshot_Img_0.jpg)
+![Img Screenshot 0](https://github.com/MrSliddes/SLIDDES-Unity-Screenshot/blob/GitHub-Info/SLIDDES_Unity_Screenshot_Img_0.jpg)
+![Img Screenshot 1](https://github.com/MrSliddes/SLIDDES-Unity-Screenshot/blob/GitHub-Info/SLIDDES_Unity_Screenshot_Img_1.jpg)
 
 SLIDDES Unity Screenshot already contains the following platforms:
 - App Store
