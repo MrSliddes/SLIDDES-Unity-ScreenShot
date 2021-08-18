@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
-using System.Diagnostics;
+using Unity.EditorCoroutines.Editor;
 
 namespace SLIDDES.Screenshot
 {
@@ -35,6 +37,10 @@ namespace SLIDDES.Screenshot
 
         private static Screenshot instance;
 
+        /// <summary>
+        /// Is a screenshot currently being processed?
+        /// </summary>
+        private bool isProcessingScreenshot;
         /// <summary>
         /// Next time the editor window is opend reset all values (it skips load())
         /// </summary>
@@ -80,6 +86,14 @@ namespace SLIDDES.Screenshot
         /// </summary>
         private Camera camera;
         /// <summary>
+        /// Array of all the platforms
+        /// </summary>
+        private Platform[] platforms;
+        /// <summary>
+        /// Queue of screenshots to process
+        /// </summary>
+        private Queue<Options> toTake = new Queue<Options>();
+        /// <summary>
         /// The render texture used for screenshots
         /// </summary>
         private RenderTexture renderTexture;
@@ -95,14 +109,6 @@ namespace SLIDDES.Screenshot
         /// The screenshot texture2D
         /// </summary>
         private Texture2D texture2D;
-        /// <summary>
-        /// The editor window to screenshot when screenshoting an ew
-        /// </summary>
-        private EditorWindow editorWindowToScreenshot;
-        /// <summary>
-        /// Array of all the platforms
-        /// </summary>
-        private Platform[] platforms;
 
         private readonly string EDITORPREF_PREFIX = "SLIDDES_Unity_Screenshot_";
 
@@ -167,6 +173,10 @@ namespace SLIDDES.Screenshot
             // Load values unless reset is active, then skip load
             resetOnOpen = EditorPrefs.GetBool(EDITORPREF_PREFIX + "resetOnOpen", false);
             if(!resetOnOpen) Load(); else resetOnOpen = false;
+
+            camera = Camera.main;
+
+            EditorCoroutineUtility.StartCoroutineOwnerless(CheckForUnprocessedScreenshots());
         }
 
         private void OnDisable()
@@ -263,7 +273,12 @@ namespace SLIDDES.Screenshot
                 if(GUILayout.Button(new GUIContent("Generate Screenshots Game View", "Take a screenshot for every selected resolution of the Game view window."), GUILayout.Height(28)))
                 {
                     // For each included platform resolution create a screenshot
-                    TakeScreenshots(1, CurrentPlatform.resolutions.Where(x => x.include).ToArray());
+                    Resolution[] res = CurrentPlatform.resolutions.Where(x => x.include).ToArray();
+                    foreach(var item in res)
+                    {
+                        UnityEngine.Debug.Log(item.size);
+                    }
+                    TakeScreenshots(1, res);
                 }
                 // Generate screenshots game view + UI with selected resolutions
                 if(GUILayout.Button(new GUIContent("Generate Screenshots Game View + UI", "Take a screenshot for every selected resolution of the Game view window with UI."), GUILayout.Height(28)))
@@ -356,10 +371,10 @@ namespace SLIDDES.Screenshot
                 fileExtension = (FileExtension)EditorGUILayout.Popup(new GUIContent("File Extension", "The extension the file is saved with"), (int)fileExtension, Enum.GetNames(typeof(FileExtension)).Select(x => "." + x).ToArray());
                 // Texture format
                 textureFormat = (TextureFormat)EditorGUILayout.EnumPopup(new GUIContent("Texture Format", "The texture format of the screenshot. Default is RGBA32."), textureFormat);
-                // Show loading bar
-                showLoadingBar = EditorGUILayout.Toggle(new GUIContent("Show Loading Bar", "Show the loading bar when generating multiple screenshots."), showLoadingBar);
+                // Show loading bar //TODO not working when generating multiple screenshots
+                //showLoadingBar = EditorGUILayout.Toggle(new GUIContent("Show Loading Bar", "Show the loading bar when generating multiple screenshots."), showLoadingBar);
                 // Show screenshot message
-                showScreenshotMessage = EditorGUILayout.Toggle(new GUIContent("Show Message", "Show a message when a screenshot has been taken."), showScreenshotMessage);
+                showScreenshotMessage = EditorGUILayout.Toggle(new GUIContent("Show Messages", "Show a message when a screenshot has been taken."), showScreenshotMessage);
 
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
@@ -384,7 +399,7 @@ namespace SLIDDES.Screenshot
         /// <param name="options">The options for the screenshot</param>
         public static void TakeScreenshot(Options options)
         {
-            ProcessScreenshot(options);
+            Instance.toTake.Enqueue(options);
         }
 
         /// <summary>
@@ -397,7 +412,6 @@ namespace SLIDDES.Screenshot
         {
             for(int i = 0; i < resolutions.Length; i++)
             {
-                if(Instance.showLoadingBar) EditorUtility.DisplayProgressBar("SLIDDES Screenshot", "Taking screenshots... (" + i + "/" + resolutions.Length + ")", i / resolutions.Length);
                 TakeScreenshot(new Options(cameraIndex, resolutions[i].size, includeUI));
             }
             UnityEngine.Debug.Log("[Screenshot] Generated " + resolutions.Length + " screenshots");
@@ -407,8 +421,9 @@ namespace SLIDDES.Screenshot
         /// Processes the screenshot with given options. !Use TakeScreenshot instead of this if you dont know what this does!
         /// </summary>        
         /// <param name="options">The options for the screenshot</param>
-        public static void ProcessScreenshot(Options options)
+        public static IEnumerator ProcessScreenshot(Options options)
         {
+            Instance.isProcessingScreenshot = true;
             // Variables needed
             byte[] bytes;
 
@@ -432,7 +447,8 @@ namespace SLIDDES.Screenshot
             if(targetCamera == null)
             {
                 UnityEngine.Debug.LogWarning("[Screenshot] Couldn't take screenshot: Screenshot camera not assigned. (Check Screenshot > Settings > Camera)");
-                return;
+                Instance.isProcessingScreenshot = false;
+                yield break;
             }
 
             // Save pre screenshot rect values
@@ -456,7 +472,8 @@ namespace SLIDDES.Screenshot
                         {
                             activeWindow.Show();
                             UnityEngine.Debug.LogWarning("[Screenshot] Make sure Scene view is visible first");
-                            return;
+                            Instance.isProcessingScreenshot = false;
+                            yield break;
                         }
 
                         // Resize camera -> cannot resize scene view camera, cannot change window size as that causes black screens
@@ -486,18 +503,38 @@ namespace SLIDDES.Screenshot
                         File.WriteAllBytes(Path.Combine(Instance.fileDirectory, Instance.GetFileName((int)sizeX, (int)sizeY)), bytes);
                         break;
                     case 1: // Game camera with UI
-                        // Set targetCamera resolution
-                        Instance.SetCameraResolution(targetCamera, resolution);
+                        // Set game view resolution with help of Kyusyukeigo.Helper.GameViewSizeHelper
+                        Kyusyukeigo.Helper.GameViewSizeHelper.AddCustomSize(GameViewSizeGroupType.Standalone, Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
+                        Kyusyukeigo.Helper.GameViewSizeHelper.ChangeGameViewSize(GameViewSizeGroupType.Standalone, Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
+
+                        // Set pixelRect first, then rect
+                        targetCamera.pixelRect = new Rect(0, 0, resolution.x, resolution.y);
+                        yield return null;
+                        targetCamera.rect = new Rect(0, 0, 1, 1);
+                        // Make sure the UI updated with the new res
+                        Canvas.ForceUpdateCanvases();
+                        EditorApplication.ExecuteMenuItem("Window/General/Game");
+
+                        // Wait a frame
+                        yield return null;
+                        //UnityEngine.Debug.Log("pre s " + targetCamera.rect + " " + targetCamera.pixelRect);
 
                         // Capture and save screenshot
-                        UnityEngine.ScreenCapture.CaptureScreenshot(Path.Combine(Instance.fileDirectory, Instance.GetFileName(options.resolution.x, options.resolution.y, false) + ".png"));
-
-                        // Restore post screenshot values
-                        targetCamera.rect = preRect;
-                        targetCamera.pixelRect = prePixelRect;
-
+                        UnityEngine.ScreenCapture.CaptureScreenshot(Path.Combine(Instance.fileDirectory, Instance.GetFileName(resolution.x, resolution.y, false) + ".png"));
                         // Make sure game view is visible so the screenshot gets processed
                         EditorApplication.ExecuteMenuItem("Window/General/Game");
+
+                        // Wait a frame
+                        yield return null;
+
+                        Kyusyukeigo.Helper.GameViewSizeHelper.RemoveCustomSize(GameViewSizeGroupType.Standalone, Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
+
+                        // Restore post screenshot values, important that pixelRect gets reset first
+                        targetCamera.pixelRect = prePixelRect;
+                        yield return null;
+                        targetCamera.rect = preRect;
+                        Canvas.ForceUpdateCanvases();
+                        yield return null;
                         break;
                     default: // Custom camera with UI
                         // Need to switch the main camera tag to targetCamera (regardless if its already main or not)
@@ -524,7 +561,8 @@ namespace SLIDDES.Screenshot
                 }
 
                 if(Instance.showScreenshotMessage) UnityEngine.Debug.Log("[Screenshot] Took screenshot");
-                return;
+                Instance.isProcessingScreenshot = false;
+                yield break;
             }
 
             // Save pre screenshot texture values
@@ -569,8 +607,32 @@ namespace SLIDDES.Screenshot
             File.WriteAllBytes(Path.Combine(Instance.fileDirectory, fileName), bytes);
 
             if(Instance.showScreenshotMessage) UnityEngine.Debug.Log("[Screenshot] Took screenshot");
+            Instance.isProcessingScreenshot = false;
+            yield break;
         }
         
+        /// <summary>
+        /// Checks the queue for screenshots to process
+        /// </summary>
+        /// <returns>null</returns>
+        private IEnumerator CheckForUnprocessedScreenshots()
+        {
+            while(true)
+            {
+                if(toTake.Count > 0)
+                {                    
+                    if(!isProcessingScreenshot)
+                    {
+                        // Process screenshot and dequeue
+                        EditorCoroutineUtility.StartCoroutineOwnerless(ProcessScreenshot(toTake.Dequeue()));
+                        Instance.isProcessingScreenshot = true;
+                    }
+                }
+
+                yield return null;
+            }
+        }
+
         /// <summary>
         /// Encode a texture2D to byte array
         /// </summary>
