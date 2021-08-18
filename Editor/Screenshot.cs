@@ -527,7 +527,7 @@ namespace SLIDDES.Screenshot
                         // Wait a frame
                         yield return null;
 
-                        Kyusyukeigo.Helper.GameViewSizeHelper.RemoveCustomSize(GameViewSizeGroupType.Standalone, Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
+                        Kyusyukeigo.Helper.GameViewSizeHelper.RemoveCustomSize(Kyusyukeigo.Helper.GameViewSizeHelper.GetCurrentGameViewSizeGroupType(), Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
 
                         // Restore post screenshot values, important that pixelRect gets reset first
                         targetCamera.pixelRect = prePixelRect;

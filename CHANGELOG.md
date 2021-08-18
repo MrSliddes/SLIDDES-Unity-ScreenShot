@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [2.1.2] - 2021-08-18
+### Fixed
+- Forgot to change 1 line that also needed to grab the current platform in order to remove the temp resolution
+
 ## [2.1.1] - 2021-08-18
 ### Fixed
 - Temporary game view resolution now gets added to correct current platform the user is on (Unity Build Settings Platform)
