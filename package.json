@@ -1,6 +1,6 @@
 {
   "name": "com.sliddes.screenshot",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "displayName": "SLIDDES Screenshot",
   "description": "Easy to use screenshot editor window for taking screenshots in Unity.\n\nAccess: Window > SLIDDES > Screenshot",
   "unity": "2020.1",

@@ -504,8 +504,8 @@ namespace SLIDDES.Screenshot
                         break;
                     case 1: // Game camera with UI
                         // Set game view resolution with help of Kyusyukeigo.Helper.GameViewSizeHelper
-                        Kyusyukeigo.Helper.GameViewSizeHelper.AddCustomSize(GameViewSizeGroupType.Standalone, Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
-                        Kyusyukeigo.Helper.GameViewSizeHelper.ChangeGameViewSize(GameViewSizeGroupType.Standalone, Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
+                        Kyusyukeigo.Helper.GameViewSizeHelper.AddCustomSize(Kyusyukeigo.Helper.GameViewSizeHelper.GetCurrentGameViewSizeGroupType(), Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
+                        Kyusyukeigo.Helper.GameViewSizeHelper.ChangeGameViewSize(Kyusyukeigo.Helper.GameViewSizeHelper.GetCurrentGameViewSizeGroupType(), Kyusyukeigo.Helper.GameViewSizeHelper.GameViewSizeType.FixedResolution, resolution.x, resolution.y, "SDSsnstTemp");
 
                         // Set pixelRect first, then rect
                         targetCamera.pixelRect = new Rect(0, 0, resolution.x, resolution.y);

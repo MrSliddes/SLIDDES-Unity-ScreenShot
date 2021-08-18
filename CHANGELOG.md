@@ -3,7 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
-## [2.1.0] - 2021-08-16
+## [2.1.1] - 2021-08-18
+### Fixed
+- Temporary game view resolution now gets added to correct current platform the user is on (Unity Build Settings Platform)
+
+## [2.1.0] - 2021-08-18
 ### Added
 - Editor Coroutines v1.0.0 package dependency
 - GameViewSizeHelper.cs + MIT License, for changing game view resolution, credit to https://github.com/Syy9/GameViewSizeChanger
