@@ -54,13 +54,13 @@ namespace SLIDDES.Screenshot
         /// </summary>
         private bool showScreenshotMessage = true;
         /// <summary>
-        /// The index of the current platform in platforms []
-        /// </summary>
-        private int currentPlatformIndex;
-        /// <summary>
         /// The editor window to screenshot array index
         /// </summary>
         private int currentEditorWindowIndex;
+        /// <summary>
+        /// The index of the current platform in platforms []
+        /// </summary>
+        private int currentPlatformIndex;
         /// <summary>
         /// The file directory where the screenshots are saved
         /// </summary>
@@ -90,10 +90,6 @@ namespace SLIDDES.Screenshot
         /// </summary>
         private Platform[] platforms;
         /// <summary>
-        /// Queue of screenshots to process
-        /// </summary>
-        private Queue<Options> toTake = new Queue<Options>();
-        /// <summary>
         /// The render texture used for screenshots
         /// </summary>
         private RenderTexture renderTexture;
@@ -109,6 +105,10 @@ namespace SLIDDES.Screenshot
         /// The screenshot texture2D
         /// </summary>
         private Texture2D texture2D;
+        /// <summary>
+        /// Queue of screenshots to process
+        /// </summary>
+        private Queue<Options> toTake = new Queue<Options>();
 
         private readonly string EDITORPREF_PREFIX = "SLIDDES_Unity_Screenshot_";
 
@@ -202,7 +202,7 @@ namespace SLIDDES.Screenshot
             EditorGUILayout.EndScrollView();
         }
 
-        #region OnGUI Functions
+        #region OnGUI Methods
 
         private void OnGUIQuickAccess()
         {
@@ -226,6 +226,7 @@ namespace SLIDDES.Screenshot
                     Process.Start("explorer.exe", @fileDirectory);
 #elif UNITY_EDITOR_OSX
                     //TODO
+                    UnityEngine.Debug.LogError("[Screenshot] Not implemented yet for OSX.");
 #endif
                 }
             }
@@ -391,7 +392,9 @@ namespace SLIDDES.Screenshot
             EditorGUILayout.EndVertical();
         }
 
-#endregion
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// For taking a screenshot
@@ -610,7 +613,7 @@ namespace SLIDDES.Screenshot
             Instance.isProcessingScreenshot = false;
             yield break;
         }
-        
+
         /// <summary>
         /// Checks the queue for screenshots to process
         /// </summary>
@@ -752,6 +755,10 @@ namespace SLIDDES.Screenshot
             return -1;
         }
 
+        #endregion
+
+        #region EditorPrefs Load/Saving
+
         /// <summary>
         /// Load the editorPref values
         /// </summary>
@@ -849,7 +856,9 @@ namespace SLIDDES.Screenshot
             EditorPrefs.SetBool(EDITORPREF_PREFIX + "showScreenshotMessage", showScreenshotMessage);
             EditorPrefs.SetBool(EDITORPREF_PREFIX + "resetOnOpen", resetOnOpen);
         }
-        
+
+        #endregion
+
         /// <summary>
         /// The options when taking a screenshot
         /// </summary>
@@ -871,16 +880,6 @@ namespace SLIDDES.Screenshot
             /// The resolution of the screenshot
             /// </summary>
             public Vector2Int resolution;
-
-            public Options() { }
-
-            public Options(Options copy)
-            {
-                useCameraResolution = copy.useCameraResolution;
-                includeUI = copy.includeUI;
-                cameraIndex = copy.cameraIndex;
-                resolution = copy.resolution;
-            }
 
             /// <summary>
             /// The options for a screenshot

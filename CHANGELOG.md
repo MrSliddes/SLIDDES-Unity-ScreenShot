@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [2.1.3] - 2021-09-16
+### Changed
+- Cleaned up code
+
 ## [2.1.2] - 2021-08-18
 ### Fixed
 - Forgot to change 1 line that also needed to grab the current platform in order to remove the temp resolution
